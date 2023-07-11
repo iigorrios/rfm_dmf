@@ -188,6 +188,6 @@ SELECT
     
     
     )/2, 1) 
-    ) as RFM_score    
+    ) as rfm_score   
 FROM octo_orders
 GROUP BY cod_cliente;
