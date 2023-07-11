@@ -1,0 +1,13 @@
+SELECT 
+	vwClienteScore.*,
+	template_rfm."rfm_class",
+	template_rfm."tipo_cliente",
+	customers.contact_name,
+	customers.phone,
+	customers.city
+FROM 
+	vwClienteScore
+LEFT JOIN template_rfm
+	ON vwClienteScore."rfm_score" = template_rfm."rfm_score"
+		LEFT JOIN customers
+			ON vwClienteScore.customer_id = customers.customer_id;
