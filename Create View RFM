@@ -1,3 +1,5 @@
+CREATE OR REPLACE VIEW vwClienteScore AS
+
 with max_value_freq AS(
 
   select 
