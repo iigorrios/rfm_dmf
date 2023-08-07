@@ -51,7 +51,13 @@ SELECT
     min(to_timestamp(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo') AS primeira_compra,
     max(to_timestamp(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo') AS ultima_compra,
     
-    (to_timestamp(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo' - lag(to_timestamp(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo') OVER (PARTITION BY cod_cliente ORDER BY data_pedido)) AS media_entre_compras,
+    AVG(intervalo) AS media_entre_compras
+	FROM (
+	    SELECT
+	        cod_cliente,
+	        (to_timestamp(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo' - lag(to_timestamp(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo') OVER (PARTITION BY cod_cliente ORDER BY data_pedido)) AS intervalo
+	    FROM octo_orders
+	) subquery
  
     date_part('day', NOW() - MAX(TO_TIMESTAMP(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo')) AS "Recencia",
     COUNT(DISTINCT cod_pedido) AS "Frequencia",
