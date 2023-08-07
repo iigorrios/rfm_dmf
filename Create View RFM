@@ -36,18 +36,14 @@ max_ltv as (
 
 
 media_em_dias as ( 
-	SELECT 
-		AVG(media_entre_compras) AS media_entre_compras
-	FROM 
-		(select 
-			(date_part('day', max(to_timestamp(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo') 
-					   - min(to_timestamp(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo'))) 
-		 					/ COUNT(DISTINCT cod_pedido) AS "media_entre_compras"
-		from octo_orders 
-		group by cod_cliente
-		HAVING (date_part('day', max(to_timestamp(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo') 
-						  - min(to_timestamp(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo'))) > 0
-		) AS subquery
+	SELECT
+    		AVG(intervalo) AS media_entre_compras
+	FROM (
+	    SELECT
+	        cod_cliente,
+	        (to_timestamp(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo' - lag(to_timestamp(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo') OVER (PARTITION BY cod_cliente ORDER BY data_pedido)) AS intervalo
+	    FROM orders
+	) subquery
 )
 
 SELECT
@@ -55,7 +51,7 @@ SELECT
     min(to_timestamp(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo') AS primeira_compra,
     max(to_timestamp(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo') AS ultima_compra,
     
-    (date_part('day', max(to_timestamp(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo') - min(to_timestamp(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo'))) / COUNT(DISTINCT cod_pedido) AS "media_entre_compras",
+    (to_timestamp(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo' - lag(to_timestamp(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo') OVER (PARTITION BY cod_cliente ORDER BY order_date)) AS media_entre_compras,
  
     date_part('day', NOW() - MAX(TO_TIMESTAMP(data_pedido, 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'America/Sao_Paulo')) AS "Recencia",
     COUNT(DISTINCT cod_pedido) AS "Frequencia",
